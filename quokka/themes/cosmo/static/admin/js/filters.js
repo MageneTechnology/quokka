@@ -41,8 +41,8 @@ var AdminFilters = function(element, filters_element, operations, options, types
         var $select = $('<select class="filter-op" />')
                       .change(changeOperation);
 
-        $(op).each(function() {
-            $select.append($('<option/>').attr('value', this[0]).text(this[1]));
+        $(op).each(function(index, value) {
+            $select.append($('<option/>').attr('value', value.arg).text(value.operation));
         });
 
         $el.append(
@@ -52,29 +52,28 @@ var AdminFilters = function(element, filters_element, operations, options, types
         $select.select2({width: 'resolve'});
 
         // Input
-        var optId = op[0][0];
+        var optId = op[0].arg;
 
-        var $field;
+        var valuesForFilterType = op[0].options;
+        if (valuesForFilterType) {
+            var $valuesSelect = $('<select class="filter-val" />')
+                    .attr('name', 'flt' + lastCount + '_' + optId);
 
-        if (optId in options) {
-            $field = $('<select class="filter-val" />')
-                        .attr('name', 'flt' + lastCount + '_' + optId);
-
-            $(options[optId]).each(function() {
-                $field.append($('<option/>')
-                    .val(this[0]).text(this[1]));
+            $(valuesForFilterType).each(function(index, value) {
+                $valuesSelect.append($('<option/>').val(value[0]).text(value[1]));
             });
 
-            $el.append($('<td/>').append($field));
-            $field.select2({width: 'resolve'});
+            $el.append($('<td/>').append($valuesSelect));
+            $valuesSelect.select2({width: 'resolve'});
         } else
         {
-            $field = $('<input type="text" class="filter-val" />')
+            var $field = $('<input type="text" class="filter-val" />')
                         .attr('name', 'flt' + lastCount + '_' + optId);
             $el.append($('<td/>').append($field));
         }
 
-        if (optId in types) {
+        var optIdInTypes = $.inArray(optId, types);
+        if (optIdInTypes != -1) {
             $field.attr('data-role', types[optId]);
             faForm.applyStyle($field, types[optId]);
         }

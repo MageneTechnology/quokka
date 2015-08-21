@@ -7,6 +7,7 @@
 <a href="http://smallactsmanifesto.org" title="Small Acts Manifesto"><img src="http://smallactsmanifesto.org/static/images/smallacts-badge-80x15-blue.png" style="border: none;" alt="Small Acts Manifesto" /></a>
 
 [![wercker status](https://app.wercker.com/status/e9cbc4497ee946083aa19fbd3f756c91/m "wercker status")](https://app.wercker.com/project/bykey/e9cbc4497ee946083aa19fbd3f756c91)
+[![Launch on OpenShift](http://launch-shifter.rhcloud.com/button.svg)](https://openshift.redhat.com/app/console/application_type/custom?cartridges%5B%5D=python-2.7&cartridges%5B%5D=mongodb-2.4&initial_git_url=https://github.com/quokkaproject/quokka.git&name=quokka&initial_git_branch=master)
 
 Quokka project
 ===============================================
@@ -34,6 +35,8 @@ Quokka is a flexible content management platform powered by Python, Flask and Mo
 git clone https://github.com/quokkaproject/quokka --branch master --single-branch
 cd quokka
 ```
+
+> if you are cloning to contribute to the project just clone it without the "--branch=master --single-branch" part
 
 ## Run Quokka (for development)
 
@@ -109,7 +112,7 @@ pip install -r requirements.txt
 
     3. Create a superuser  (required to login on admin interface)
         ```bash
-        $ python manage.py createsuperuser
+        $ python manage.py accounts_createsuperuser
         you@email.com
         P4$$W0Rd
         ```
@@ -155,7 +158,7 @@ pip install -r requirements.txt
     
     2. You can create a new admin user to login and start posting
     ```bash
-    docker-compose run shell python manage.py createsuperuser
+    docker-compose run shell python manage.py accounts_createsuperuser
     ```
 
     3. Or populate with sample data (optional)

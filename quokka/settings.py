@@ -45,6 +45,12 @@ by FLask-Admin file manager
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'mediafiles')
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+ROOT_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, '..'))
+
+# For starting with sample data
+POPULATE_FILEPATH = os.path.join(
+    ROOT_DIR, 'etc', 'fixtures', 'initial_data.json'
+)
 
 """
 Files on MAP_STATIC_ROOT will be served from /static/
@@ -154,7 +160,9 @@ DEBUG_TB_PANELS = (
     'flask.ext.mongoengine.panels.MongoDebugPanel',
     'flask_debugtoolbar.panels.logger.LoggingPanel',
     'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel',
+    'flask_debugtoolbar.panels.config_vars.ConfigVarsDebugPanel',
 )
+
 
 """
 By default DEBUG_TOOLBAR is disabled
@@ -204,8 +212,12 @@ SECURITY_CHANGEABLE = True
 SECURITY_RECOVERABLE = True
 SECURITY_TRACKABLE = True
 
+# Configurations below should be changes in local_settings
+# when email system got setted up
 SECURITY_SEND_REGISTER_EMAIL = False
 SECURITY_LOGIN_WITHOUT_CONFIRMATION = True
+SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
+SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL = False
 
 """
 Dealer can versionate static files if you are under a repo
@@ -257,3 +269,12 @@ CONTENT_EXTENSION = "html"
 
 SENTRY_ENABLED = False
 SENTRY_DSN = ""
+
+# html or markdown
+DEFAULT_TEXT_FORMAT = "html"
+
+"Shortner urls configuration"
+SHORTENER_ENABLED = False
+
+"Config default shorter"
+SHORTENER_DEFAULT_API = 'TinyurlShortener'

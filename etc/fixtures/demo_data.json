@@ -85,7 +85,7 @@
                },
                {
                    "name": "google-analytics",
-                   "rawvalue": "",
+                   "rawvalue": "UA-65278590-1",
                    "formatter": "text"
                },
                {
@@ -186,7 +186,7 @@
             "title": "Home",
             "slug": "home",
             "description": "Home page",
-            "show_in_menu": true,
+            "show_in_menu": false,
             "is_homepage": true,
             "include_in_rss": true,
             "published": true,
@@ -445,6 +445,20 @@
             "channel": "programming",
             "tags": [ "python", "flask", "web" ],
             "body" : "Flask is easy to get started with as a beginner because there is little boilerplate code for getting a simple app up and running.\r\n\r\nFor example, here's a valid \"hello world\" web application with Flask:\r\n\r\n    from flask import Flask\r\n    app = Flask(__name__)\r\n    \r\n    @app.route('/')\r\n    def hello_world():\r\n        return 'Hello World!'\r\n    \r\n    if __name__ == '__main__':\r\n        app.run()\r\n\t\r\n\t",
+            "license" : {
+                "title" : "Creative Commons",
+                "link" : "http://creativecommons.com",
+                "identifier" : "creative_commons_by_nc_nd"
+            },
+            "content_format": "markdown"
+        },
+        {
+            "title" : "Try Quokka CMS! write a post.",
+            "summary" : "Use default credentials to access /admin \r\nuser: admin@example.com\r\npass: admin",
+            "slug" : "try-quokka-cms",
+            "channel": "blog",
+            "tags": [ "quokka" ],
+            "body" : "## You can try Quokka ADMIN\r\n\r\nCreate some posts\r\n\r\n> Use default credentials to access [/admin](/admin) \r\n\r\n- user: admin@example.com\r\n- password: admin",
             "license" : {
                 "title" : "Creative Commons",
                 "link" : "http://creativecommons.com",

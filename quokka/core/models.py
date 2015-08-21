@@ -14,7 +14,8 @@ from quokka.core.fields import MultipleObjectsReturned
 from quokka.modules.accounts.models import User
 from quokka.utils.text import slugify
 from quokka.utils import get_current_user_for_models
-
+from quokka.utils.shorturl import ShorterURL
+from quokka.utils.settings import get_setting_value
 from .admin.utils import _l
 
 logger = logging.getLogger()
@@ -27,7 +28,7 @@ logger = logging.getLogger()
 class ContentFormat(object):
     content_format = db.StringField(
         choices=TEXT_FORMATS,
-        default="html"  # TODO: Find a way to set default form settings
+        default=get_setting_value('DEFAULT_TEXT_FORMAT', 'html')
     )
 
 
@@ -336,12 +337,25 @@ class Channel(Tagged, HasCustomValue, Publishable, LongSlugged,
         return self.long_slug
 
     def get_absolute_url(self, *args, **kwargs):
+        if self.is_homepage:
+            return "/"
         return "/{0}/".format(self.long_slug)
 
     def get_canonical_url(self, *args, **kwargs):
+        """
+        TODO: This method should be reviewed
+        Canonical URL is the preferred URL for a content
+        when the content can be served by multiple URLS
+        In the case of channels it will never happen
+        until we implement the channel alias feature
+        """
         if self.is_homepage:
             return "/"
         return self.get_absolute_url()
+
+    def get_http_url(self):
+        site_url = Config.get('site', 'site_domain', request.url_root)
+        return u"{}{}".format(site_url, self.get_absolute_url())
 
     def clean(self):
         homepage = Channel.objects(is_homepage=True)
@@ -435,22 +449,10 @@ class Config(HasCustomValue, ContentFormat, Publishable, db.DynamicDocument):
                 ret = None
 
         if not ret and group == 'settings' and name is not None:
-            ret = current_app.config.get(name)
+            # get direct from store to avoid infinite loop
+            ret = current_app.config.store.get(name)
 
         return ret or default
-
-    def save(self, *args, **kwargs):
-        super(Config, self).save(*args, **kwargs)
-
-        # Try to update the config for the running app
-        # AFAIK Flask apps are not thread safe
-        # TODO: do it in a signal
-        try:
-            if self.group == 'settings':
-                _settings = {i.name: i.value for i in self.values}
-                current_app.config.update(_settings)
-        except:
-            logger.warning("Cant update app settings")
 
     def __unicode__(self):
         return self.group
@@ -517,6 +519,14 @@ class License(db.EmbeddedDocument):
     identifier = db.StringField(max_length=255, choices=LICENSES)
 
 
+class ShortenedURL(db.EmbeddedDocument):
+    original = db.StringField(max_length=255)
+    short = db.StringField(max_length=255)
+
+    def __str__(self):
+        return self.short
+
+
 ###############################################################
 # Base Content for every new content to extend. inheritance=True
 ###############################################################
@@ -533,6 +543,7 @@ class Content(HasCustomValue, Publishable, LongSlugged,
     model = db.StringField()
     comments_enabled = db.BooleanField(default=True)
     license = db.EmbeddedDocumentField(License)
+    shortened_url = db.EmbeddedDocumentField(ShortenedURL)
 
     meta = {
         'allow_inheritance': True,
@@ -581,7 +592,9 @@ class Content(HasCustomValue, Publishable, LongSlugged,
 
     def get_http_url(self):
         site_url = Config.get('site', 'site_domain', request.url_root)
-        return u"{}{}".format(site_url, self.get_absolute_url())
+        absolute_url = self.get_absolute_url()
+        absolute_url = absolute_url[1:]
+        return u"{}{}".format(site_url, absolute_url)
 
     def get_absolute_url(self, endpoint='detail'):
         if self.channel.is_homepage:
@@ -630,6 +643,10 @@ class Content(HasCustomValue, Publishable, LongSlugged,
         return self.title
 
     @property
+    def short_url(self):
+        return self.shortened_url.short if self.shortened_url else ''
+
+    @property
     def model_name(self):
         return self.__class__.__name__.lower()
 
@@ -649,10 +666,21 @@ class Content(HasCustomValue, Publishable, LongSlugged,
         self.heritage()
         self.populate_related_mpath()
         self.populate_channel_roles()
+        self.populate_shorter_url()
         super(Content, self).save(*args, **kwargs)
 
     def pre_render(self, render_function, *args, **kwargs):
         return render_function(*args, **kwargs)
+
+    def populate_shorter_url(self):
+        if not self.published or not get_setting_value('SHORTENER_ENABLED'):
+            return
+
+        url = self.get_http_url()
+        shortener = ShorterURL()
+        if not self.shortened_url or url != self.shortened_url.original:
+            self.shortened_url = ShortenedURL(original=url,
+                                              short=shortener.short(url))
 
 
 class Link(Content):
